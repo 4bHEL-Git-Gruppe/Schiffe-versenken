@@ -1,0 +1,21 @@
+### 26. Mai 2024
+
+**Zeit:** 15:00 - 19:30
+
+**Ziel:** Hinzufügen einer SQLite-Datenbankanwendung mit Benutzerverwaltungsfunktionen
+
+**Durchgeführte Schritte:**
+1. Programmplanung
+2. Installation der sqlite3-Bibliothek mit `pip install sqlite3`.
+3. mysql neu lernen (ich habe das meiste vergessen...)
+4. Neue Funktionen: 
+		create_UserDB(), hashPassword(password), hashPassword(password),
+		SignUp(username, password), login(username, password), addWin(username),
+		addgame(username), getUserData(username), getRanking(), getAll(),
+		logout(username), delete(username), update(username, gamesPlayed, gamesWon),
+		updatePassword(username, password), updateUsername(username, newUsername),
+5. Ich weiß nicht, ob Lukas lieber addWin(username) und addgame(username) oder update(username, gamesPlayed, gamesWon) benutzen möchte.
+6. Testen der neuen Implementierung.
+
+**Ergebnisse:**
+- Alle neuen Funktionen funktionieren. (nach mein Unit-Test)
