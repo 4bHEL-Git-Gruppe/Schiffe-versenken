@@ -31,11 +31,11 @@ def SignUp(username, password):
     cursor = conn.cursor()
     cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
     if cursor.fetchone():
-        print("User existiert bereits")
+        return("User existiert bereits")
     else:
         cursor.execute("INSERT INTO users (username, hashedPassword) VALUES (?, ?)", (username, hashedPassword))
         conn.commit()
-        print("User erfolgreich hinzugefügt")
+        return("User erfolgreich hinzugefügt")
     conn.close()
 
 def login(username, password):
@@ -145,44 +145,47 @@ def updateUsername(username, newUsername):
     conn.commit()
     conn.close()
 
+#new 
+
+def getBenutzerCode(username):
+    """Gibt den Benutzercode eines Benutzers zurück"""
+    conn = sqlite3.connect('userdb.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT benutzerCode FROM users WHERE username = ?", (username,))
+    benutzerCode = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return benutzerCode
+
+def benutzerCheck(benutzerCode):
+    """Überprüft, ob ein Benutzercode gültig ist und welchem user es gehort"""
+    conn = sqlite3.connect('userdb.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM users WHERE benutzerCode = ?", (benutzerCode,))
+    username = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return username
+
 ''' '''
 # Main entry point
 if __name__ == "__main__":
     create_UserDB()
     # Beispiel
-    SignUp("user1", "password1")
-    benutzerCode = login("user1sx", "password1")
+    status1 = SignUp("user1", "password1")
+    status2 = SignUp("user2", "password1")
+    print(status1)
+    print(status2)
+    benutzerCode = login("user1", "password1")
     if benutzerCode:
         print("Benutzercode:", benutzerCode)
+          
+    benutzerCodeCheck = getBenutzerCode("user1")
+    print("Benutzercode:", benutzerCodeCheck)
+
     addWin("user1")
     addgame("user1")
-    print(getUserData("user1"))
-    print(getRanking())
+
+    currentUser = benutzerCheck(benutzerCode)
+    print("currentUser:", currentUser)
     print(getAll())
-    logout("user1")
-    delete("user1")
-
-
-'''
-haupt Idee...
-
-if __name__ == "__main__":
-    create_UserDB()
-    Username = "Haool"
-    Password = "awfegshj5tku7lk6jdega"
-    hashedPassword = hashPassword(Password)
-    Userstatus = Usercheck(Username)
-    if (Userstatus == "neuUser") : 
-        add_UserDB(Username, hashedPassword)
-    elif (Userstatus == "Altuser"):
-        print("User existiert bereits")
-        passwordchecked = checkPassword(Password)
-        if (passwordchecked == True):
-            print("Passwort ist korrekt")
-        else:
-            print("Passwort ist falsch")
-    else:
-        print("Fehler")
-    read_UserDB()
-
-'''
