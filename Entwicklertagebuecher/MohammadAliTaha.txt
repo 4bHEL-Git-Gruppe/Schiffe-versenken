@@ -19,3 +19,23 @@
 
 **Ergebnisse:**
 - Alle neuen Funktionen funktionieren. (nach mein Unit-Test)
+
+
+
+### 28. Mai 2024
+
+**Zeit:** 8:00 - 8:50
+
+**Ziel:** signUp verbessern und neue Funktionen implementieren 
+
+**Durchgeführte Schritte:**
+1. Programmplanung
+2. Änderungen:
+		Funktion bearbeitet: SignUp; es gibt den Status von user zurück
+3. Neue Funktionen: 
+		getBenutzerCode(username), benutzerCheck(benutzerCode)
+4. Testen der neuen Implementierung.
+5. Entwicklertagebuch bearbeiten
+
+**Ergebnisse:**
+- Alle neuen Funktionen funktionieren. (nach mein Unit-Test)
