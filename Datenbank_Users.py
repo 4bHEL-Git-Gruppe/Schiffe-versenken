@@ -153,7 +153,6 @@ def getBenutzerCode(username):
     cursor = conn.cursor()
     cursor.execute("SELECT benutzerCode FROM users WHERE username = ?", (username,))
     benutzerCode = cursor.fetchone()[0]
-    conn.commit()
     conn.close()
     return benutzerCode
 
@@ -163,19 +162,19 @@ def benutzerCheck(benutzerCode):
     cursor = conn.cursor()
     cursor.execute("SELECT username FROM users WHERE benutzerCode = ?", (benutzerCode,))
     username = cursor.fetchone()[0]
-    conn.commit()
     conn.close()
     return username
 
-''' '''
-# Main entry point
+'''
+# Beispiel
 if __name__ == "__main__":
     create_UserDB()
-    # Beispiel
+
     status1 = SignUp("user1", "password1")
     status2 = SignUp("user2", "password1")
     print(status1)
     print(status2)
+
     benutzerCode = login("user1", "password1")
     if benutzerCode:
         print("Benutzercode:", benutzerCode)
@@ -189,3 +188,4 @@ if __name__ == "__main__":
     currentUser = benutzerCheck(benutzerCode)
     print("currentUser:", currentUser)
     print(getAll())
+'''
