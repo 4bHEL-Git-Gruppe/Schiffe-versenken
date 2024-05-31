@@ -1,0 +1,2 @@
+23.05.24  Grundgerüst für die Netzwerkübertragung nach Server Client Prinzip
+31.05.24  
