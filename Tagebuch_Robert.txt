@@ -1,0 +1,2 @@
+23.05.2024 Grundgerüst Internet Kommunikation Server
+30.05.2024 Grundgerüst Internet Kommunikation Client
