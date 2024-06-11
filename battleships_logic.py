@@ -31,6 +31,13 @@ class Ship:
 
         self.destroyedParts = list()
 
+    def on_ship(self, position: tuple) -> bool:
+        if (self.position[0] <= position[0] <= self.position[0] + self.size[0] - 1
+        and self.position[1] <= position[1] <= self.position[1] + self.size[1] - 1):
+            return True
+        else:
+            return False
+
     def hit(self, target: tuple) -> bool:
         """
         checks if the ship is hit by a missile hitting the target position
@@ -48,8 +55,7 @@ class Ship:
             return False
         
         # is target on ship
-        if (self.position[0] <= target[0] <= self.position[0] + self.size[0] - 1
-        and self.position[1] <= target[1] <= self.position[1] + self.size[1] - 1):
+        if self.on_ship(target):
             if (pos := (target[0] - self.position[0], target[1] - self.position[1])) in self.destroyedParts:
                 return False
             else:
@@ -63,7 +69,7 @@ class Ship:
 
 
 class Board:
-    def __init__(self, size: tuple, starting_player: int=0, ships: list=None):
+    def __init__(self, size: tuple, starting_player: int=0, ships: list=None, spacing: Literal["cornersok", "nocorners", "none"]="cornersok"):
         self.active_player = starting_player
 
         self.size = size
@@ -73,6 +79,8 @@ class Board:
         else:
             self.ship_selection = ships
 
+        self.spacing = spacing
+
         self.ship_templates = {"carrier": 5,
                                "battleship": 4,
                                "destroyer": 3,
@@ -81,11 +89,41 @@ class Board:
 
         self.ships = [list(), list()]
 
-        self.unused_ships = [self.ship_selection, self.ship_selection]
+        self.unused_ships = [self.ship_selection[::], self.ship_selection[::]]
+
+    def _is_valid_position(self, player: int, ship_size: tuple, position: tuple) -> bool:
+        # position not on board
+        if not (0 <= position[0] <= self.size[0] and 0 <= position[1] <= self.size[1]):
+            return False
+        
+        # ship to big to fit on board
+        if not (position[0] + ship_size[0] <= self.size[0] and position[1] + ship_size[1] <= self.size[1]):
+            return False
+        
+        # overlap to other ships
+        if self.spacing == "gap":
+            notspace = 0
+        else:
+            notspace = 1
+
+        for ship in self.ships[player]:
+            if self.spacing == "cornersok":
+                if (ship.position[0] - ship_size[0] + 1 <= position[0] <= ship.position[0] + ship.size[0] - 1       # direct overlap x
+                and ship.position[1] - ship_size[1] <= position[1] <= ship.position[1] + ship.size[1]):             # gap overlap y
+                    return False
+                elif (ship.position[0] - ship_size[0] <= position[0] <= ship.position[0] + ship.size[0]             # gap overlap x
+                and ship.position[1] - ship_size[1] + 1 <= position[1] <= ship.position[1] + ship.size[1] - 1):     # direct overlap y
+                    return False
+            
+            elif (ship.position[0] - ship_size[0] + notspace <= position[0] <= ship.position[0] + ship.size[0] - notspace
+            and ship.position[1] - ship_size[1] + notspace <= position[1] <= ship.position[1] + ship.size[1] - notspace):
+                return False
+        
+        return True
 
     def _set_ship(self, player: int, ship_size: tuple | int, position: tuple, rotation: Literal["v", "h"]=None, name: str=None) -> bool:
         # player id is out of range
-        if player not in (1, 2):
+        if player not in (0, 1):
             return False
         
         # convert shipsize int and rotation to ship_size tuple
@@ -96,21 +134,17 @@ class Board:
                 ship_size = (1, ship_size)
             elif rotation == "h":
                 ship_size = (ship_size, 1)
+
+        # position not on board
+        if not self._is_valid_position(player, ship_size, position):
+            return False
         
         # remove used ship from available
-        if ship_size in self.unused_ships:
-            self.unused_ships.remove(ship_size)
-        elif (_ship_size := ship_size[::-1]) in self.unused_ships:
-            self.unused_ships.remove(_ship_size)
+        if ship_size in self.unused_ships[player]:
+            self.unused_ships[player].remove(ship_size)
+        elif (_ship_size := ship_size[::-1]) in self.unused_ships[player]:
+            self.unused_ships[player].remove(_ship_size)
         else:
-            return False
-        
-        # position not on board
-        if not (0 <= position[0] <= self.size[0] and 0 <= position[1] <= self.size[1]):
-            return False
-        
-        # ship to big to fit on board
-        if not (position[0] + ship_size[0] <= self.size[0] and position[1] + ship_size[1] <= self.size[1]):
             return False
         
         # no name given: generate iterative one
@@ -121,8 +155,93 @@ class Board:
 
         return True
 
-    def set_ship(self, player: int, ship: str, position: tuple, rotation: Literal["v", "h"], name=None) -> bool:
+    def set_ship(self, player: int, ship: str, position: tuple, rotation: Literal["v", "h"], name: str=None) -> bool:
         if ship not in self.ship_templates.keys():
             return False
         
         return self._set_ship(player=player, ship_size=self.ship_templates[ship], position=position, rotation=rotation, name=name)
+
+    def attack(self, player: int, position: tuple) -> bool:
+        # player id is out of range
+        if player == self.active_player:
+            return False
+        
+        for ship in self.ships[player+1%len(self.ships)]:
+            if ship.hit(position):
+                return True
+        
+        self.active_player = player+1%len(self.ships)   # switch player
+
+        return False
+    
+    def is_defeated(self, player: int) -> bool:
+        # player id is out of range
+        if player not in (1, 2):
+            return False
+        
+        for ship in self.ships[player]:
+            if ship.alive:
+                return False
+        return True
+    
+def draw(board, player):
+    canvas = [[" "]]
+    for i in range(0, board.size[0]):
+        canvas[0].append(" " + str(i) + " ")
+    for y in range(board.size[1]):
+        line = [str(y)]
+        for x in range(board.size[0]):
+            for ship in board.ships[player]:
+                if ship.on_ship((x, y)):
+                    if ship.alive:
+                        line.append(" ▣ ")
+                    else:
+                        line.append(" □ ")
+                    break
+            else:
+                line.append(" . ")
+        canvas.append(line)
+
+    for line in canvas:
+        print("".join(line))
+            
+
+if "__main__" == __name__:
+    boards = Board((10, 10))
+
+    """
+    "carrier": 5,
+    "battleship": 4,
+    "destroyer": 3,
+    "submarine": 3,
+    "boat": 2
+    
+    
+    """
+
+    while True:
+        print(boards.unused_ships)
+        if len(boards.unused_ships[0]) > 0:
+            active = 0
+        elif len(boards.unused_ships[1]) > 0:
+            active = 1
+        else:
+            print("finished setting")
+            break
+
+        draw(boards, active)
+        ship_type = input("Ship type: ")
+        rotation = input("ship rotation: ")
+        positionx = int(input("ship x position: "))
+        positiony = int(input("ship y position: "))
+        position = (positionx, positiony)
+
+        if boards.set_ship(active, ship_type, position, rotation):
+            print(f"{boards.ships[active][-1].name} was placed")
+        else:
+            print("something went wrong, check pos")
+
+    print("finished setting")
+
+
+
