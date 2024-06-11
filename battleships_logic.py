@@ -123,7 +123,7 @@ class Board:
 
     def _set_ship(self, player: int, ship_size: tuple | int, position: tuple, rotation: Literal["v", "h"]=None, name: str=None) -> bool:
         # player id is out of range
-        if player not in (0, 1):
+        if player not in range(0, len(self.ships)):
             return False
         
         # convert shipsize int and rotation to ship_size tuple
@@ -162,21 +162,21 @@ class Board:
         return self._set_ship(player=player, ship_size=self.ship_templates[ship], position=position, rotation=rotation, name=name)
 
     def attack(self, player: int, position: tuple) -> bool:
-        # player id is out of range
-        if player == self.active_player:
+        # player id is incorrect
+        if player != self.active_player:
             return False
         
-        for ship in self.ships[player+1%len(self.ships)]:
+        for ship in self.ships[(player+1)%len(self.ships)]:
             if ship.hit(position):
                 return True
         
-        self.active_player = player+1%len(self.ships)   # switch player
+        self.active_player = (player+1)%len(self.ships)   # switch player
 
         return False
     
     def is_defeated(self, player: int) -> bool:
         # player id is out of range
-        if player not in (1, 2):
+        if player not in range(0, len(self.ships)):
             return False
         
         for ship in self.ships[player]:
@@ -193,10 +193,10 @@ def draw(board, player):
         for x in range(board.size[0]):
             for ship in board.ships[player]:
                 if ship.on_ship((x, y)):
-                    if ship.alive:
-                        line.append(" ▣ ")
-                    else:
+                    if (x-ship.position[0], y-ship.position[1]) in ship.destroyedParts:
                         line.append(" □ ")
+                    else:
+                        line.append(" . ")
                     break
             else:
                 line.append(" . ")
@@ -220,7 +220,6 @@ if "__main__" == __name__:
     """
 
     while True:
-        print(boards.unused_ships)
         if len(boards.unused_ships[0]) > 0:
             active = 0
         elif len(boards.unused_ships[1]) > 0:
@@ -243,5 +242,20 @@ if "__main__" == __name__:
 
     print("finished setting")
 
+    while not(boards.is_defeated(0) or boards.is_defeated(1)):
+        print(f"{boards.active_player}s turn")
+
+        draw(boards, (boards.active_player+1)%2)
+        
+        positionx = int(input("ship x position: "))
+        positiony = int(input("ship y position: "))
+        position = (positionx, positiony)
+
+        if boards.attack(boards.active_player, position):
+            print("hit, again")
+        else:
+            print("miss")
+
+    print("end:", boards.active_player, "won")
 
 
