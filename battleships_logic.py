@@ -12,6 +12,8 @@ Ship class with
 
 """
 
+from typing import Literal
+
 
 class Ship:
     """
@@ -53,8 +55,74 @@ class Ship:
             else:
                 self.destroyedParts.append(pos)
                 # if all parts are hit
-                if len(self.destroyedParts) == self.size[0] * self.size[1]:
+                if len(self.destroyedParts) >= self.size[0] * self.size[1]:
                     self.alive = False
                 return True
         else:
             return False
+
+
+class Board:
+    def __init__(self, size: tuple, starting_player: int=0, ships: list=None):
+        self.active_player = starting_player
+
+        self.size = size
+
+        if not ships:
+            self.ship_selection = [(1, 5), (1, 4), (1, 3), (1, 3), (1, 2)]       # fill with ships to be used
+        else:
+            self.ship_selection = ships
+
+        self.ship_templates = {"carrier": 5,
+                               "battleship": 4,
+                               "destroyer": 3,
+                               "submarine": 3,
+                               "boat": 2}
+
+        self.ships = [list(), list()]
+
+        self.unused_ships = [self.ship_selection, self.ship_selection]
+
+    def _set_ship(self, player: int, ship_size: tuple | int, position: tuple, rotation: Literal["v", "h"]=None, name: str=None) -> bool:
+        # player id is out of range
+        if player not in (1, 2):
+            return False
+        
+        # convert shipsize int and rotation to ship_size tuple
+        if isinstance(ship_size, int):
+            if not rotation:
+                return False
+            if rotation == "v":
+                ship_size = (1, ship_size)
+            elif rotation == "h":
+                ship_size = (ship_size, 1)
+        
+        # remove used ship from available
+        if ship_size in self.unused_ships:
+            self.unused_ships.remove(ship_size)
+        elif (_ship_size := ship_size[::-1]) in self.unused_ships:
+            self.unused_ships.remove(_ship_size)
+        else:
+            return False
+        
+        # position not on board
+        if not (0 <= position[0] <= self.size[0] and 0 <= position[1] <= self.size[1]):
+            return False
+        
+        # ship to big to fit on board
+        if not (position[0] + ship_size[0] <= self.size[0] and position[1] + ship_size[1] <= self.size[1]):
+            return False
+        
+        # no name given: generate iterative one
+        if not name:
+            name = f"battleship_{len(self.ships[player])}"
+
+        self.ships[player].append(Ship(ship_size, position, name))
+
+        return True
+
+    def set_ship(self, player: int, ship: str, position: tuple, rotation: Literal["v", "h"], name=None) -> bool:
+        if ship not in self.ship_templates.keys():
+            return False
+        
+        return self._set_ship(player=player, ship_size=self.ship_templates[ship], position=position, rotation=rotation, name=name)
