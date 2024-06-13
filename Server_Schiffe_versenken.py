@@ -1,12 +1,10 @@
 import socket
-import pickle
 
 class CommunicationServer:
     def __init__(self,host, port):
         self.host = host
         self.port = port
         self.server = None
-        self.players = []
 
     def start_server(self):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
