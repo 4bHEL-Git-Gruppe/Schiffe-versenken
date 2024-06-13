@@ -1,0 +1,14 @@
+# Dev-Diary by Lukas Malleier
+
+Goals:
+- Game Logic of "Schiffe versenken"
+
+## 06.06.2024
+- new branch (GameLogic)
+- added battleships_logic.py
+    - added Ship class with hit method
+
+## 11.06.2024
+- Board class
+- console version to test Game
+- no detection if the last ship that was hit has sunken completely
