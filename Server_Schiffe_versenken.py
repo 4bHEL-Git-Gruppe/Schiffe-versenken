@@ -1,20 +1,36 @@
 import socket
 import pickle
 
-# Server initialisieren und auf Verbindungen warten
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('127.0.0.1', 10000))
-server.listen(2)
+class CommunicationServer:
+    def __init__(self,host, port):
+        self.host = host
+        self.port = port
+        self.server = None
+        self.players = []
 
-print("Auf Spieler Warten...")
+    def start_server(self):
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind((self.host, self.port))
+        print("Server started")
+        self.server.listen(2)
 
-Spieler_liste = []
-# Zwei Spieler akzeptieren und ihre Sockets speichern
-for _ in range(1):
-    client, addr = server.accept()
-    Spieler_liste.append((client, addr))
-    print(f"Verbunden mit {addr}")
+    def wait_for_players(self,anz):
+        self.server.listen(anz)
+        print("Waiting for Players...")
+        self.players = []
+        for i in range(anz):
+            client, addr = self.server.accept()
+            self.players.append((client, addr))
+            print(f"Verbunden mit Spieler {i + 1} bei Adresse {addr}")
+    
+    def SendData(self,data,player):
+        if player==0:
+            self.players[0][0].send(data.encode())
+        else:
+            self.players[1][0].send(data.encode())
 
-Spieler_liste[0][0].send("Player1".encode())
-#Spieler_liste[1][0].send("Player2".encode())
+    def ReciveData(self):
+        data = self.server.recv(1024).decode()
+        return data
+
 
