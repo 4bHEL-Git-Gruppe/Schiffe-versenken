@@ -1,0 +1,6 @@
+23.05.24  Grundgerüst für die Netzwerkübertragung nach Server Client Prinzip
+31.05.24  
+
+
+23.05.2024 Grundgerüst Internet Kommunikation Server
+30.05.2024 Grundgerüst Internet Kommunikation Client

@@ -1,0 +1,144 @@
+### 26. Mai 2024
+
+**Zeit:** 15:00 - 19:30
+
+**Ziel:** Hinzufügen einer SQLite-Datenbankanwendung mit Benutzerverwaltungsfunktionen
+
+**Durchgeführte Schritte:**
+1. Programmplanung
+2. Installation der sqlite3-Bibliothek mit `pip install sqlite3`.
+3. mysql neu lernen (ich habe das meiste vergessen...)
+4. Neue Funktionen: 
+		- `create_UserDB()`
+		- `hashPassword(password)`
+		- `hashPassword(password)`
+		- `SignUp(username, password)`
+		- `login(username, password)`
+		- `addWin(username)`
+		- `addgame(username)`
+		- `getUserData(username)`
+		- `getRanking()`
+		- `getAll()`
+		- `logout(username)`
+		- `delete(username)`
+		- `update(username, gamesPlayed, gamesWon)`
+		- `updatePassword(username, password)`
+		- `updateUsername(username, newUsername)`
+5. Ich weiß nicht, ob Lukas lieber `addWin(username)` und `addgame(username)` oder `update(username, gamesPlayed, gamesWon)` benutzen möchte.
+6. Testen der neuen Implementierung.
+
+**Ergebnisse:**
+- Alle neuen Funktionen funktionieren. (nach mein Unit-Test)
+
+### 28. Mai 2024
+
+**Zeit:** 8:00 - 8:50; 12:00 - 12:30
+
+**Ziel:** signUp verbessern und neue Funktionen implementieren; Löschen von nicht benötigten Commits
+
+**Durchgeführte Schritte:**
+1. Programmplanung
+2. Änderungen:
+		- Funktion bearbeitet: SignUp; es gibt den Status von user zurück
+3. Neue Funktionen: 
+		- `getBenutzerCode(username)`
+		- `benutzerCheck(benutzerCode)`
+4. Testen der neuen Implementierung.
+5. Entwicklertagebuch bearbeiten.
+6. Programm optimieren 
+
+**Ergebnisse:**
+- Alle neuen Funktionen funktionieren. (nach mein Unit-Test)
+
+### 2. Juni 2024
+
+**Zeit:** 1:00 - 2:10
+
+**Ziel:** Neu erstellen der Datenbankstruktur.
+
+**Durchgeführte Schritte:**
+- Datenbankstruktur neu erstellt.
+
+### 3. Juni 2024
+
+**Zeit:** 18:00 - 21:20
+
+**Ziel:** Neu schreiben des User-Datenbankprogramms.
+
+**Durchgeführte Schritte:**
+- Neue Funktionen hinzugefügt:
+		- `create_UserDB()`
+		- `hashPassword(password)`
+		- `checkPassword(hashedPassword, password)`
+		- `SignUp(username, password)`
+		- `login(username, password)`
+		- `addWin(username)`
+		- `addGame(username)`
+		- `getUserData(username)`
+		- `getRanking()`
+		- `getAllUser()`
+		- `logout(username)`
+		- `delete(username)`
+		- `update(username, gamesPlayed, gamesWon)`
+		- `updatePassword(username, password)`
+		- `updateUsername(username, newUsername)`
+		- `getBenutzerCode(username)`
+		- `benutzerCodeCheck(benutzerCode)`
+
+### 6. Juni 2024
+
+**Zeit:** 10:45 - 12:30; 20:00 - 23:00
+
+**Ziel:** Erklärung der neuen Datenbankstruktur im Sprint und Erstellen der neuen Datenbank.
+
+**Durchgeführte Schritte:**
+- Erklärung der neuen Datenbankstruktur im Sprint.
+- Neue Datenbank erstellt (game).
+
+### 10. Juni 2024
+
+**Zeit:** 13:00 - 16:00
+
+**Ziel:** Fertigstellung des Datenbankprogramms.
+
+**Durchgeführte Schritte:**
+- Neue Funktionen hinzugefügt:
+		- `getAllGame()`
+		- `getGameData(P0, P1)`
+		- `updateGameStatus(P0, P1, status)`
+- Probleme:
+		- Fehler bei falschen Eingaben in die Funktionen.
+
+### 11. Juni 2024
+
+**Zeit:** 18:30 - 22:50
+
+**Ziel:** Kommentieren und Testen des Programms.
+
+**Durchgeführte Schritte:**
+- Programm kommentiert und getestet.
+
+### 12. Juni 2024
+
+**Zeit:** 8:00 - 12:00
+
+**Ziel:** Sicherstellung der Benutzerfreundlichkeit des Programms. 
+
+**Durchgeführte Schritte:**
+- Neue Funktion hinzugefügt:
+		- `checkUser(username)`
+- Programm Idioten sicher machen --> keine Fehlermeldung bei falschen Eingaben 
+
+
+***Zeit bis jetzt insgesamt:*** 
+
+26. Mai 2024: 4 Stunden 30 Minuten
+28. Mai 2024: 1 Stunde 20 Minuten
+2. Juni 2024: 1 Stunde 10 Minuten
+3. Juni 2024: 3 Stunden 20 Minuten
+6. Juni 2024: 4 Stunden 45 Minuten
+10. Juni 2024: 3 Stunden
+11. Juni 2024: 4 Stunden 20 Minuten
+12. Juni 2024: 4 Stunden
+
+Die Gesamtzeit bis jetzt beträgt also 26 Stunden 25 Minuten.
