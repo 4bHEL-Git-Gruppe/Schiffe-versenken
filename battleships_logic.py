@@ -101,7 +101,7 @@ class Board:
             return False
         
         # overlap to other ships
-        if self.spacing == "gap":
+        if self.spacing == "nocorners":
             notspace = 0
         else:
             notspace = 1
@@ -184,7 +184,7 @@ class Board:
                 return False
         return True
     
-def draw(board, player):
+def draw(board, player, show=True):
     canvas = [[" "]]
     for i in range(0, board.size[0]):
         canvas[0].append(" " + str(i) + " ")
@@ -196,7 +196,10 @@ def draw(board, player):
                     if (x-ship.position[0], y-ship.position[1]) in ship.destroyedParts:
                         line.append(" □ ")
                     else:
-                        line.append(" . ")
+                        if show:
+                            line.append(" ▣ ")
+                        else:
+                            line.append(" . ")
                     break
             else:
                 line.append(" . ")
@@ -228,7 +231,7 @@ if "__main__" == __name__:
             print("finished setting")
             break
 
-        draw(boards, active)
+        draw(boards, active, True)
         ship_type = input("Ship type: ")
         rotation = input("ship rotation: ")
         positionx = int(input("ship x position: "))
@@ -245,7 +248,7 @@ if "__main__" == __name__:
     while not(boards.is_defeated(0) or boards.is_defeated(1)):
         print(f"{boards.active_player}s turn")
 
-        draw(boards, (boards.active_player+1)%2)
+        draw(boards, (boards.active_player+1)%2, False)
         
         positionx = int(input("ship x position: "))
         positiony = int(input("ship y position: "))
