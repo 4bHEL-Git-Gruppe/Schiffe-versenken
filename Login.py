@@ -11,18 +11,20 @@ from PyQt6.QtWidgets import (
     QWidget,
     QGridLayout,
     QPushButton,
+    QScrollArea,
+    QFrame,
 )
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("My App")
-        self.setFixedSize(870, 500)
-        self.create_ui()
+        self.create_client()
         
-        self.signup.clicked.connect(self.signup_clicked)
+        #self.signup.clicked.connect(self.signup_clicked)
     
     def create_ui(self):
+        self.setFixedSize(870, 500)
         # Login/Register
         main_layout = QGridLayout()
         vert_layout = QVBoxLayout()
@@ -155,7 +157,7 @@ class MainWindow(QMainWindow):
                 background-repeat: no-repeat;
             }
         """)
-    
+
     def signup_clicked(self):
         # Entferne das zentrale Widget
         self.central_widget.setParent(None)
@@ -163,22 +165,68 @@ class MainWindow(QMainWindow):
         self.create_client()
         
     def create_client(self):
+        self.setFixedSize(600,330)
+        # Hier kannst du die UI für den Client-Bereich erstellen
+        main_layout_client = QGridLayout()
+        client_ver_layout = QVBoxLayout()
+        client_hort_layout = QHBoxLayout()
+
+        user_name_label = QLabel("User_Name")
+        user_name_label.setStyleSheet("font-size: 14pt; color: black; "
+                                      "background-color : rgba(255,255,255, 90);"
+                                      "border : 2px solid grey;"
+                                      "border-radius : 10")
+        user_name_label.setFixedSize(250, 35)
+
+        neues_spiel_button = QPushButton("Neues Spiel")
+        neues_spiel_button.setStyleSheet("font-size : 14pt")
+        neues_spiel_button.setFixedSize(250, 35)
+
+
+        # Hier erstellen wir eine scrollbare Liste von Labels
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+
+        scroll_content = QWidget()
+        scroll_content.setStyleSheet("background-color : rgba(255,255,255, 0);"
+                                     "border : 0px")
+        scroll_layout = QVBoxLayout(scroll_content)
+        
+        
+        for i in range(20):  # Beispiel: Erstelle 20 Labels
+            label = QLabel(f"Label {i+1}")
+            label.setStyleSheet("font-size: 14pt; color: black;")
+            scroll_layout.addWidget(label)
+
+        scroll_area.setFixedSize(250,300)
+        scroll_area.setStyleSheet("background-color : rgba(255,255,255, 90);"
+                                  "border : 2px solid grey;"
+                                  "border-radius: 10%;")
+        scroll_area.setWidget(scroll_content)
+        scroll_layout.setContentsMargins(0,0,0,0)
+        
+        #Layout platzierung
+        client_ver_layout.addWidget(user_name_label)
+        client_ver_layout.addWidget(neues_spiel_button)
+        client_ver_layout.setSpacing(20)
+        client_ver_layout.setContentsMargins(0,0,0,0)
+        
+        main_layout_client.addLayout(client_ver_layout, 0, 0, Qt.AlignmentFlag.AlignTop)
+        main_layout_client.addWidget(scroll_area, 0, 1, Qt.AlignmentFlag.AlignTop)
+        
+        main_layout_client.setContentsMargins(15,15,15,15)
+        main_layout_client.setSpacing(20)
+
+        client_widget = QWidget()
+        client_widget.setLayout(main_layout_client)
+        self.setCentralWidget(client_widget)
+
         # Setze den Hintergrund auf eine andere Farbe
         self.setStyleSheet("""
             QMainWindow {
-                background-color: rgb(230,230,230)
+                background-image: url(client_background.jpg);
             }
         """)
-        # Hier kannst du die UI für den Client-Bereich erstellen
-        client_ver_layout = QVBoxLayout()
-        client_hort_layout = QHBoxLayout()
-        client_label = QLabel("Welcome to the client area!")
-        client_label.setStyleSheet("font-size: 18pt; color: black;")
-        client_ver_layout.addWidget(client_label)
-        
-        client_widget = QWidget()
-        client_widget.setLayout(client_ver_layout)
-        self.setCentralWidget(client_widget)
 
 app = QApplication(sys.argv)
 w = MainWindow()
