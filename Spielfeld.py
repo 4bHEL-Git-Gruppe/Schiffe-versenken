@@ -1,44 +1,96 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QMainWindow, QFrame, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QMainWindow, QFrame, QVBoxLayout, QHBoxLayout, QMessageBox
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QLabel
 
 class GameField(QWidget):
     def __init__(self, parent, is_own):
         super().__init__()
-        self.initUI()
         self.parent = parent
-        self.is_own = is_own  # Add a flag to indicate whether it's the own or enemy field
-        if is_own:
-            self.clicked_buttons = []  # Initialize an empty list to store clicked buttons for own field
-        else:
-            self.clicked_buttons = []  # Initialize an empty list to store clicked buttons for enemy field
+        self.is_own = is_own
+        self.buttons = [[None for _ in range(10)] for _ in range(10)]
+        self.clicked_buttons = []
+        self.initUI()
 
     def initUI(self):
-        grid_layout = QGridLayout()
-        self.setLayout(grid_layout)
+        layout = QGridLayout()
+        self.setLayout(layout)
         for i in range(10):
             for j in range(10):
-                button = QPushButton()  # Create an empty button
-                button.setFixedSize(30, 30)  # Set the button size to 30x30
-                button.clicked.connect(lambda checked, i=i, j=j, button=button: self.on_button_clicked(i, j, button))  # Connect the button click event
-                grid_layout.addWidget(button, i, j)
+                button = QPushButton()
+                button.setFixedSize(30, 30)
+                button.clicked.connect(lambda checked, i=i, j=j: self.on_button_clicked(i, j))
+                layout.addWidget(button, i, j)
+                self.buttons[i][j] = button
 
-    def on_button_clicked(self, i, j, button):
+    def on_button_clicked(self, i, j):
+        if (i, j) in self.clicked_buttons:
+            msg_box = QMessageBox()
+            msg_box.setText("Button already clicked!")
+            msg_box.exec_()
+            return
         if self.is_own:
-            self.parent.clicked_buttons_own.append((i, j))  # Store the clicked button's position in the own field list
-            print("Own field clicked:", self.parent.clicked_buttons_own)
+            ship_selector = self.parent.ship_selector
+            if ship_selector.current_ship < len(ship_selector.ships):
+                ship_type = ship_selector.current_ship
+                ship_lengths = [2, 3, 3, 4, 5]  # hardcoded ship lengths
+                ship_length = ship_lengths[ship_type]
+                color = ["blue", "green", "yellow", "orange", "red"][ship_type]  # subtract 1 from current_ship
+                orientation = self.ask_orientation()
+                if orientation == "horizontal":
+                    can_place_ship = True
+                    for k in range(ship_length):
+                        if j + k >= 10:
+                            can_place_ship = False
+                            break
+                    if can_place_ship:
+                        for k in range(ship_length):
+                            self.buttons[i][j + k].setStyleSheet(f"background-color: {color}")
+                            self.clicked_buttons.append((i, j + k))
+                        ship_selector.next_ship()  # Call next_ship method
+                    else:
+                        print("Ship length exceeded!")
+                elif orientation == "vertical":
+                    can_place_ship = True
+                    for k in range(ship_length):
+                        if i + k >= 10:
+                            can_place_ship = False
+                            break
+                    if can_place_ship:
+                        for k in range(ship_length):
+                            self.buttons[i + k][j].setStyleSheet(f"background-color: {color}")
+                            self.clicked_buttons.append((i + k, j))
+                        ship_selector.next_ship()  # Call next_ship method
+                    else:
+                        print("Ship length exceeded!")
+            else:
+                print("All ships placed!")
         else:
-            self.parent.clicked_buttons_enemy.append((i, j))  # Store the clicked button's position in the enemy field list
+            self.parent.clicked_buttons_enemy.append((i, j))
             print("Enemy field clicked:", self.parent.clicked_buttons_enemy)
-            button.setStyleSheet("background-color: red")  # Change the button color to red
+            self.buttons[i][j].setStyleSheet("background-color: red")
+
+    def ask_orientation(self):
+        msg_box = QMessageBox()
+        msg_box.setText("Choose orientation:")
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg_box.button(QMessageBox.Yes).setText("Horizontal")
+        msg_box.button(QMessageBox.No).setText("Vertical")
+        ret = msg_box.exec_()
+        if ret == QMessageBox.Yes:
+            return "horizontal"
+        else:
+            return "vertical"
 
 class ShipSelector(QWidget):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
         self.ships = ["Ship 1", "Ship 2", "Ship 3", "Ship 4", "Ship 5"]
-        self.current_ship = 0
+        self.current_ship = 0  # Initialize to 0, will increment when a ship is placed
+        self.ship_lengths = [2, 3, 3, 4, 5]
+        self.ship_colors = ["blue", "green", "yellow", "orange", "red"]
         self.initUI()
 
     def initUI(self):
@@ -54,29 +106,6 @@ class ShipSelector(QWidget):
         self.ship_preview.setLayout(self.ship_preview_layout)
         layout.addWidget(self.ship_preview)
 
-        button_layout = QHBoxLayout()
-        prev_button = QPushButton("<")
-        prev_button.setFixedSize(30, 30)
-        prev_button.clicked.connect(self.prev_ship)
-        button_layout.addWidget(prev_button)
-
-        next_button = QPushButton(">")
-        next_button.setFixedSize(30, 30)
-        next_button.clicked.connect(self.next_ship)
-        button_layout.addWidget(next_button)
-
-        layout.addLayout(button_layout)
-
-        self.update_ship_preview()
-
-    def prev_ship(self):
-        self.current_ship = (self.current_ship - 1) % len(self.ships)
-        self.ship_label.setText(self.ships[self.current_ship])
-        self.update_ship_preview()
-
-    def next_ship(self):
-        self.current_ship = (self.current_ship + 1) % len(self.ships)
-        self.ship_label.setText(self.ships[self.current_ship])
         self.update_ship_preview()
 
     def update_ship_preview(self):
@@ -84,19 +113,28 @@ class ShipSelector(QWidget):
             child = self.ship_preview_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
-        ship_length = 2
-        if self.current_ship == 1:
-            ship_length = 3
-        elif self.current_ship == 2:
-            ship_length = 3
-        elif self.current_ship == 3:
-            ship_length = 4
-        elif self.current_ship == 4:
-            ship_length = 5
-        for i in range(ship_length):
-            button = QPushButton()
-            button.setFixedSize(30, 30)
-            self.ship_preview_layout.addWidget(button)
+        if self.current_ship < len(self.ships):
+            ship_length = self.ship_lengths[self.current_ship]
+            ship_color = self.ship_colors[self.current_ship]
+            for i in range(ship_length):
+                button = QPushButton()
+                button.setFixedSize(30, 30)
+                button.setStyleSheet(f"background-color: {ship_color}")
+                self.ship_preview_layout.addWidget(button)
+        else:
+            self.ship_preview.hide()  # Hide the ship preview when all ships are placed
+            label = QLabel("All ships placed!")
+            self.ship_preview_layout.addWidget(label)
+
+    def next_ship(self):
+        self.current_ship += 1
+        if self.current_ship < len(self.ships):
+            self.ship_label.setText(self.ships[self.current_ship])
+            self.update_ship_preview()
+        else:
+            self.ship_label.setText("All ships placed!")
+            self.ship_preview.hide()  # Hide the ship preview when all ships are placed
+        
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -109,8 +147,8 @@ class MainWindow(QMainWindow):
         layout = QHBoxLayout()
         central_widget.setLayout(layout)
 
-        self.clicked_buttons_own = []  # Initialize an empty list to store clicked buttons for own field
-        self.clicked_buttons_enemy = []  # Initialize an empty list to store clicked buttons for enemy field
+        self.clicked_buttons_own = []
+        self.clicked_buttons_enemy = []
 
         left_layout = QVBoxLayout()
         self.ship_selector = ShipSelector(self)
