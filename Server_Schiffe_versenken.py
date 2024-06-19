@@ -37,6 +37,15 @@ class CommunicationServer:
             if data:
                 return data, sock.getpeername()
         return None, None
+    
+    def parse_coordinates_string(coord_str):
+        # Trenne den Namen und die Koordinatenliste
+        name, coord_list_str = coord_str.split(':')
+        # Trenne die Koordinatenliste an ';'
+        coord_list = coord_list_str.split(';')
+        # Erstelle Tupel aus den Koordinaten
+        pos = [(int(x), int(y)) for x, y in (coord.split(',') for coord in coord_list)]
+        return pos, name
 
 #Mainprogramm für Testzecke
 if __name__ == "__main__":
