@@ -1,6 +1,7 @@
 import sqlite3
 import bcrypt
 import secrets
+import json
 
 # Funktion zur Erstellung der Datenbank und Tabellen
 def create_UserDB():
@@ -17,11 +18,11 @@ def create_UserDB():
 
     - game:
         - id (INTEGER): Primärschlüssel, automatisch inkrementierte Spiel-ID.
-        - P0 (VARCHAR(20)): Benutzername von Spieler 0.
-        - P1 (VARCHAR(20)): Benutzername von Spieler 1.
+        - P0 (TEXT): Benutzername von Spieler 0.
+        - P1 (TEXT): Benutzername von Spieler 1.
         - status (TEXT): Status des Spiels, muss einer der folgenden Werte sein: 'Angehalten', 'Wird_gespielt', 'P1_won', 'P0_won'.
-        - B0 (VARCHAR(100)): Brettzustand für Spieler 0.
-        - B1 (VARCHAR(100)): Brettzustand für Spieler 1.
+        - B0 (JSON): Brettzustand für Spieler 0.
+        - B1 (JSON): Brettzustand für Spieler 1.
         - turn (BOOLEAN): Boolescher Wert, der anzeigt, wer an der Reihe ist.
     """
     conn = sqlite3.connect('database.db')
@@ -29,7 +30,7 @@ def create_UserDB():
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS player (
-            userN VARCHAR(20) PRIMARY KEY,
+            userN TEXT PRIMARY KEY,
             pwd TEXT NOT NULL,
             gamesP INTEGER DEFAULT 0,
             gamesW INTEGER DEFAULT 0,
@@ -40,11 +41,11 @@ def create_UserDB():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS game (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            P0 VARCHAR(20),
-            P1 VARCHAR(20),
+            P0 TEXT,
+            P1 TEXT,
             status TEXT CHECK(status IN ('Angehalten', 'Wird_gespielt', 'P1_won', 'P0_won')),
-            B0 VARCHAR(100),
-            B1 VARCHAR(100),
+            B0 JSON,
+            B1 JSON,
             turn BOOLEAN,
             FOREIGN KEY (P0) REFERENCES player(userN),
             FOREIGN KEY (P1) REFERENCES player(userN)
@@ -418,6 +419,10 @@ def saveGame(P0: str, P1: str, b0: str, b1: str, turn: bool) -> str:
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
+    # JSON in einen String umwandeln
+    b0_json = json.dumps(b0)
+    b1_json = json.dumps(b1)
+
     # Überprüfen, ob ein Spiel mit den gleichen Spielern bereits existiert
     cursor.execute('SELECT id FROM game WHERE P0 = ? AND P1 = ?', (P0, P1))
     game = cursor.fetchone()
@@ -431,7 +436,7 @@ def saveGame(P0: str, P1: str, b0: str, b1: str, turn: bool) -> str:
             UPDATE game 
             SET B0 = ?, B1 = ?, turn = ?
             WHERE id = ?
-        ''', (b0, b1, turn, game[0]))
+        ''', (b0_json, b1_json, turn, game[0]))
         conn.commit()
         conn.close()
 
@@ -540,10 +545,49 @@ def updateGameStatus(P0: str, P1: str, status: str) -> str:
     else:
         return "Kein Spiel zwischen diesen Spielern gefunden"
 
+def getMyGame(Player: str) -> dict:
+    """
+    Gibt eine Liste aller Spiele zurück, an denen der Spieler P teilnimmt.
+
+    Parameter:
+    P (str): Benutzername von Spieler.
+
+    Rückgabewert:
+    dict: Spieldaten einschließlich ID, Spielern, Status, Brettern und Zug. 
+    """
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    
+    # Suche nach dem Spiel unabhängig von der Reihenfolge der Spieler
+    cursor.execute('''
+        SELECT * FROM game
+        WHERE (P0 = ?) OR (P1 = ?)
+    ''', (Player, Player))
+    
+    gameData = cursor.fetchone()
+    conn.close()
+    
+    if gameData:
+        return {
+            "id": gameData[0],
+            "P0": gameData[1],
+            "P1": gameData[2],
+            "status": gameData[3],
+            "B0": gameData[4],
+            "B1": gameData[5],
+            "turn": gameData[6]
+        }
 
 # Beispiel
-"""if __name__ == "__main__":
-    bourd = "0" * 10 * 10
+'''if __name__ == "__main__":
+    bourd = {
+        "schif 1": {"size": [1,5] , "position": ["x","y"], "destroyedParts": ["x,y", "x,y", "x,y"]},
+        "schif 2": {"size": [1,4] , "position": ["x","y"], "destroyedParts": ["x,y", "x,y", "x,y"]},
+        "schif 3": {"size": [1,3] , "position": ["x","y"], "destroyedParts": ["x,y", "x,y", "x,y"]},
+        "schif 4": {"size": [1,3] , "position": ["x","y"], "destroyedParts": ["x,y", "x,y", "x,y"]},
+        "schif 5": {"size": [1,2] , "position": ["x","y"], "destroyedParts": ["x,y", "x,y", "x,y"]},
+        "miss" : ["x,y", "x,y", "x,y"]
+        }
     create_UserDB()
     SignUp("testuser0", "password")
     SignUp("testuser1", "password")
@@ -556,4 +600,4 @@ def updateGameStatus(P0: str, P1: str, status: str) -> str:
 
     print(updateGameStatus("testuser1", "testuser0", "Wird_gespielt"))
 
-    print(getGameData("testuser0", "testuser1"))"""
+    print(getMyGame("testuser0"))'''
