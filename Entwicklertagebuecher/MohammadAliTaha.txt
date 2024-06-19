@@ -130,6 +130,41 @@
 - Programm Idioten sicher machen --> keine Fehlermeldung bei falschen Eingaben 
 
 
+### 13. Juni 2024
+
+**Zeit:** 10:45 - 12:30
+
+**Ziel:** Aufgaben Teilung mit Robert und Datenbank zu dev Pullen.
+
+**Durchgeführte Schritte:**
+- Datenbank durch ein Pull request pullen. 
+- mainServer mit die anderen Besprechen und Aufgaben verteilen.
+- mit mainServer beginnen
+
+
+### 14. Juni 2024
+
+**Zeit:** 11:40 - 12:30
+
+**Ziel:** Andere Programmteile anschauen um Kompatibilität mit anderen Programmteilen prüfen.
+
+**Durchgeführte Schritte:**
+- verschiedene Pull-Anfragen machen
+- Beginnen der Datenbank code zu ändern weil es mit battleships_logic nicht passt
+
+
+### 19 Juni 2024
+
+**Zeit:** 8:00 - 12:00
+
+**Ziel:** Datenbank fertig stellen und mit mainServer weiter machen
+
+**Durchgeführte Schritte:**
+- Neue Funktion "getMyGame" und getMyGame anders Speichern damit es mit battleships_logic passt.
+- bei mainServer "class MainServer" erstellt.
+
+
+
 ***Zeit bis jetzt insgesamt:*** 
 
 26. Mai 2024: 4 Stunden 30 Minuten
@@ -140,5 +175,8 @@
 10. Juni 2024: 3 Stunden
 11. Juni 2024: 4 Stunden 20 Minuten
 12. Juni 2024: 4 Stunden
+13. Juni 2024: 1 Stunde 45 Minuten
+14. Juni 2024: 50 Minuten
+19. Juni 2024: 4 Stunden
 
-Die Gesamtzeit bis jetzt beträgt also 26 Stunden 25 Minuten.
+Die Gesamtzeit bis jetzt beträgt also 33 Stunden 0 Minuten.
