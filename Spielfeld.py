@@ -44,17 +44,23 @@ class GameField(QWidget):
                         if j + k >= 10:
                             can_place_ship = False
                             break
+                        if self.is_adjacent_occupied(i, j + k):
+                            can_place_ship = False
+                            break
                     if can_place_ship:
                         for k in range(ship_length):
                             self.buttons[i][j + k].setStyleSheet(f"background-color: {color}")
                             self.clicked_buttons.append((i, j + k))
                         ship_selector.next_ship()  # Call next_ship method
                     else:
-                        print("Ship length exceeded!")
+                        print("Ship cannot be placed next to another ship!")
                 elif orientation == "vertical":
                     can_place_ship = True
                     for k in range(ship_length):
                         if i + k >= 10:
+                            can_place_ship = False
+                            break
+                        if self.is_adjacent_occupied(i + k, j):
                             can_place_ship = False
                             break
                     if can_place_ship:
@@ -63,7 +69,7 @@ class GameField(QWidget):
                             self.clicked_buttons.append((i + k, j))
                         ship_selector.next_ship()  # Call next_ship method
                     else:
-                        print("Ship length exceeded!")
+                        print("Ship cannot be placed next to another ship!")
             else:
                 print("All ships placed!")
         else:
@@ -83,6 +89,14 @@ class GameField(QWidget):
         else:
             return "vertical"
 
+    def is_adjacent_occupied(self, i, j):
+        for x in range(-1, 2):
+            for y in range(-1, 2):
+                if 0 <= i + x < 10 and 0 <= j + y < 10:
+                    if (i + x, j + y) in self.clicked_buttons:
+                        return True
+        return False
+
 class ShipSelector(QWidget):
     def __init__(self, parent):
         super().__init__()
@@ -96,7 +110,6 @@ class ShipSelector(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
         self.setLayout(layout)
-
         self.ship_label = QPushButton(self.ships[self.current_ship])
         self.ship_label.setFixedSize(100, 30)
         layout.addWidget(self.ship_label)
@@ -132,9 +145,17 @@ class ShipSelector(QWidget):
             self.ship_label.setText(self.ships[self.current_ship])
             self.update_ship_preview()
         else:
-            self.ship_label.setText("All ships placed!")
-            self.ship_preview.hide()  # Hide the ship preview when all ships are placed
-        
+            self.ship_label.hide()  # Hide the ship label
+            self.ship_preview.hide()  # Hide the ship preview
+            start_game_button = QPushButton("Ready")
+            start_game_button.setFixedSize(100, 30)
+            self.layout().addWidget(start_game_button)  # Add button to main layout
+            start_game_button.clicked.connect(self.start_game)  # Connect to start_game method
+
+    def start_game(self):
+        start_game_button = self.sender()  # Get the button that was clicked
+        start_game_button.setStyleSheet("background-color: green")  # Turn button green
+        print("Ready!")
 
 class MainWindow(QMainWindow):
     def __init__(self):
