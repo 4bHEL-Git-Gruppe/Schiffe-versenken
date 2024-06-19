@@ -1,0 +1,72 @@
+# Schiffe-versenken
+
+                                 ###CommunicationServer###
+CommunicationServer ist eine Python-Klasse, die es ermöglicht, einen einfachen Server zu 
+erstellen, der mit mehreren Clients über das Netzwerk kommunizieren kann. Die Klasse verwendet 
+die socket-Bibliothek, um Verbindungen herzustellen und Daten zu senden und zu empfangen.
+
+##Methoden
+
+__init__(self, host, port)
+Konstruktor zum Initialisieren des Servers.
+host: Die IP-Adresse des Servers.
+port: Der Port, an dem der Server lauscht.
+
+start_server(self)
+Startet den Server und bindet ihn an die angegebene IP-Adresse und den Port.
+
+wait_for_players(self, anz)
+Wartet auf die angegebene Anzahl von Spielern und akzeptiert deren Verbindungen.
+anz: Die Anzahl der Spieler, auf die gewartet werden soll.
+
+send_data(self, data, player)
+Sendet Daten an den angegebenen Spieler.
+data: Die zu sendenden Daten.
+player: Der Index des Spielers (0 für Spieler 1, 1 für Spieler 2).
+
+receive_data(self)
+Empfängt Daten von egal welchem Client.
+Rückgabewert: Die empfangenen Daten und die addr des gesendeten Clients.
+
+
+
+                                    ###CommunicationClient###
+CommunicationClient ist eine Python-Klasse, die es ermöglicht, einen einfachen Client zu 
+erstellen, der mit einem Server über das Netzwerk kommunizieren kann. Die Klasse verwendet 
+die socket-Bibliothek, um Verbindungen herzustellen und Daten zu senden und zu empfangen.
+
+##Methoden
+__init__(self, host, port)
+Konstruktor zum Initialisieren des Clients.
+host: Die IP-Adresse des Servers.
+port: Der Port, an dem der Server lauscht.
+
+start_client(self)
+Startet den Client und stellt eine Verbindung zum Server her.
+
+sendData(self, data)
+Sendet Daten an den Server.
+data: Die zu sendenden Daten.
+
+receivData(self)
+Empfängt Daten vom Server.
+Rückgabewert: Die empfangenen Daten.
+
+send_command(self, command, *args)
+Eigene Methode zum Senden von LoginDaten usw. 
+Wurde für Mohammad erstellt.
+
+place_ships(self,ship_list,name)
+Zum Schiffe platzieren am Anfang                                              x y   x y
+"ship_list" ... zweidimensionale Liste mit den Koordinaten der Schiffe Bsp: [[0,1],[3,0],[6,1]]
+"name" ... Name vom Spieler der es gesendet hat (optional da Server die Addresse vom empfangenen bekommt)
+
+fire(self,pos,name)
+Um ein Schiff abzuschießen                                   x y
+"pos" ... muss eine Liste mit einem x und y Wert sein. Bsp: [0,0]
+"name" ... Name vom Spieler der es gesendet hat (optional da Server die Addresse vom empfangenen bekommt)
+
+formatiere_liste(self,pos,name)
+interne Methode die zur Umwandlung von Liste in einen String um sie über einen Socket zu senden.
+"pos" ... Liste die in einen String gewandelt werden sollte
+Formatierung:  Name : x1,y1 ; x2,y2 ; x3,y3  (ohne Leerzeichen)
