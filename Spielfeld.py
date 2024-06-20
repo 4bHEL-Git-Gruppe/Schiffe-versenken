@@ -166,7 +166,7 @@ class ShipSelector(QWidget):
 
         # Print the ships with their orientation and position
         for ship in self.parent.game_field1.ships:
-         print(f"({ship['position'][0][0]}|{ship['position'][0][1]}), {ship['orientation'][0]}, {ship['type']+1}")
+         print(f"({ship['position'][0][0]}|{ship['position'][0][1]}),{ship['orientation'][0]},{ship['type']+1}")
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
