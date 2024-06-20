@@ -1,8 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QMainWindow, QFrame, QVBoxLayout, QHBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QMainWindow, QFrame, QVBoxLayout, QHBoxLayout, QMessageBox, QLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QLabel
 from Client_Schiffe_versenken import CommunicationClient
 
 class GameField(QWidget):
@@ -12,6 +11,7 @@ class GameField(QWidget):
         self.is_own = is_own
         self.buttons = [[None for _ in range(10)] for _ in range(10)]
         self.clicked_buttons = []
+        self.ships = []  # List to store ships with their orientation and position
         self.initUI()
 
     def initUI(self):
@@ -52,6 +52,8 @@ class GameField(QWidget):
                         for k in range(ship_length):
                             self.buttons[i][j + k].setStyleSheet(f"background-color: {color}")
                             self.clicked_buttons.append((i, j + k))
+                        ship_position = [(i, j + k) for k in range(ship_length)]
+                        self.ships.append({"type": ship_type, "orientation": orientation, "position": ship_position})
                         ship_selector.next_ship()  # Call next_ship method
                     else:
                         print("Ship cannot be placed next to another ship!")
@@ -68,6 +70,8 @@ class GameField(QWidget):
                         for k in range(ship_length):
                             self.buttons[i + k][j].setStyleSheet(f"background-color: {color}")
                             self.clicked_buttons.append((i + k, j))
+                        ship_position = [(i + k, j) for k in range(ship_length)]
+                        self.ships.append({"type": ship_type, "orientation": orientation, "position": ship_position})
                         ship_selector.next_ship()  # Call next_ship method
                     else:
                         print("Ship cannot be placed next to another ship!")
@@ -156,14 +160,13 @@ class ShipSelector(QWidget):
     def start_game(self, clicked_buttons):
         start_game_button = self.sender()  # Get the button that was clicked
         start_game_button.setStyleSheet("background-color: green")  # Turn button green
-        print(clicked_buttons)
-        client.place_ships(clicked_buttons, id)
         print("Ready!")
+        client.place_ships(clicked_buttons, id)
+        print("Game started! Waiting for opponent...")
 
-        # Create a QLabel and add it to the layout
-        ready_label = QLabel("Game started! Waiting for opponent...")
-        self.parent.layout().addWidget(ready_label)
-
+        # Print the ships with their orientation and position
+        for ship in self.parent.game_field1.ships:
+            print(f"{ship['position'][0]}, {ship['orientation'][0]}, {ship['type']+1}")
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -203,11 +206,8 @@ class MainWindow(QMainWindow):
         # Verbinden der Callback-Funktion in start_game
         self.ship_selector.start_game_callback = self.game_field1.clicked_buttons
 
-    def start_game_callback(self, clicked_buttons):
-        self.ship_selector.start_game(clicked_buttons)
-
 if __name__ == "__main__":
-    client = CommunicationClient("127.0.0.1",61112)
+    client = CommunicationClient("127.0.0.1", 61112)
     client.start_client()
     id = client.receivData()
     print(id)
