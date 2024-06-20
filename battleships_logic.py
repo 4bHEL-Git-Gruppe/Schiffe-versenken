@@ -13,7 +13,7 @@ class Ship:
         - tracks its own health
         - using the name attribute it can be customized by the user
     """
-    def __init__(self, size: tuple[int, int], position: tuple[int, int], name: str) -> None:
+    def __init__(self, size: tuple[int, int], position: tuple[int, int], name: str, destroyed_parts: list=None) -> None:
         """
         parameters:
             size: tuple[int, int] -- (x_size, y_size) of ship
@@ -25,8 +25,11 @@ class Ship:
         self.name = name
         self.alive = True
 
-        self.destroyedParts = list()    # stores destroyed parts of ship relative to ship head(self.position)
-                                        # might be better to change to absolute, depending on GUI interfacing
+        if not destroyed_parts:
+            self.destroyedParts = list()    # stores destroyed parts of ship relative to ship head(self.position)
+                                            # might be better to change to absolute, depending on GUI interfacing
+        else:
+            self.destroyedParts = destroyed_parts
 
     def on_ship(self, probe_position: tuple[int, int]) -> bool:
         """
@@ -104,6 +107,8 @@ class Board:
         # (unused) ships for each player
         self.ships = [list(), list()]
         self.unused_ships = [self.ship_selection[::], self.ship_selection[::]]
+
+        self.misses = [list(), list()]   # misses ON specific board
 
     def _is_valid_position(self, player: int, ship_size: tuple[int, int], position: tuple[int, int]) -> bool:
         """
@@ -234,6 +239,8 @@ class Board:
         
         self.active_player = (player+1)%len(self.ships)   # switch player
 
+        self.misses.append(position)
+
         return False
     
     def is_defeated(self, player: int) -> bool:
@@ -253,6 +260,16 @@ class Board:
             if ship.alive:
                 return False
         return True
+    
+    def import_game(self, data: list) -> None:
+        self.ships = [list() for _ in range(len(data))]
+        self.misses = [list() for _ in range(len(data))]
+        for board_data in range(len(data)):
+            for ship in data[board_data].keys()[:-1]:
+                ship_data = data[board_data][ship]
+                self.ships[board_data].append(Ship(size=tuple(ship_data["size"]), position=tuple(ship_data["position"]), name=ship, destroyed_parts=ship_data["destroyedParts"]))
+            self.misses[board_data] = data[board_data]["miss"]
+                                              
     
 def draw(board: Board, player: int, show: bool = True) -> None:
     """
