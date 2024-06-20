@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QMa
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QLabel
+from Client_Schiffe_versenken import CommunicationClient
 
 class GameField(QWidget):
     def __init__(self, parent, is_own):
@@ -150,12 +151,18 @@ class ShipSelector(QWidget):
             start_game_button = QPushButton("Ready")
             start_game_button.setFixedSize(100, 30)
             self.layout().addWidget(start_game_button)  # Add button to main layout
-            start_game_button.clicked.connect(self.start_game)  # Connect to start_game method
+            start_game_button.clicked.connect(lambda: self.start_game(self.parent.game_field1.clicked_buttons))  # Connect to start_game method with clicked_buttons
 
-    def start_game(self):
+    def start_game(self, clicked_buttons):
         start_game_button = self.sender()  # Get the button that was clicked
         start_game_button.setStyleSheet("background-color: green")  # Turn button green
+        print(clicked_buttons)
+        client.place_ships(clicked_buttons, id)
         print("Ready!")
+
+        # Create a QLabel and add it to the layout
+        ready_label = QLabel("Game started! Waiting for opponent...")
+        self.parent.layout().addWidget(ready_label)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -193,7 +200,17 @@ class MainWindow(QMainWindow):
 
         layout.addLayout(right_layout)
 
+        # Verbinden der Callback-Funktion in start_game
+        self.ship_selector.start_game_callback = self.game_field1.clicked_buttons
+
+    def start_game_callback(self, clicked_buttons):
+        self.ship_selector.start_game(clicked_buttons)
+
 if __name__ == "__main__":
+    client = CommunicationClient("127.0.0.1",61112)
+    client.start_client()
+    id = client.receivData()
+    print(id)
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
