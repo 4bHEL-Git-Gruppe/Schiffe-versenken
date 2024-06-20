@@ -264,11 +264,34 @@ class Board:
     def import_game(self, data: list) -> None:
         self.ships = [list() for _ in range(len(data))]
         self.misses = [list() for _ in range(len(data))]
-        for board_data in range(len(data)):
-            for ship in data[board_data].keys()[:-1]:
+        for board_data in range(len(data)-1):
+            for ship in list(data[board_data].keys())[:-1]:
                 ship_data = data[board_data][ship]
-                self.ships[board_data].append(Ship(size=tuple(ship_data["size"]), position=tuple(ship_data["position"]), name=ship, destroyed_parts=ship_data["destroyedParts"]))
-            self.misses[board_data] = data[board_data]["miss"]
+                destr_parts = [tuple(i) for i in ship_data["destroyedParts"]]
+                self.ships[board_data].append(Ship(size=tuple(ship_data["size"]), position=tuple(ship_data["position"]), name=ship, destroyed_parts=destr_parts))
+                self.ships[board_data][-1].alive = ship_data["alive"]
+            self.misses[board_data] = data[board_data]["misses"]
+        self.active_player = data[-1]
+
+    def export_game(self) -> list:
+        game = list()
+
+        for player in range(len(self.ships)):
+            ships = dict()
+            for ship in self.ships[player]:
+                ship_data = dict()
+                ship_data["size"] = list(ship.size)
+                ship_data["position"] = list(ship.position)
+                ship_data["alive"] = ship.alive
+                destr_parts = [list(i) for i in ship.destroyedParts]
+                ship_data["destroyedParts"] = list(destr_parts)
+                ships[ship.name] = ship_data
+            ships["misses"] = [list(i) for i in self.misses[player]]
+            game.append(ships)
+        game.append(self.active_player)
+
+        return game
+
                                               
     
 def draw(board: Board, player: int, show: bool = True) -> None:
@@ -359,11 +382,19 @@ if "__main__" == __name__:
         positiony = int(input("ship y position: "))
         position = (positionx, positiony)
 
+        if input("export?: ") == "ja":
+            game = boards.export_game()
+            print(game)
+
         # try to attack given position
         if boards.attack(boards.active_player, position):
             print("hit, again")
         else:
             print("miss")
+
+        if input("load?: ") == "ja":
+            print("importing")
+            boards.import_game(game)
 
     print("end:", boards.active_player, "won")
 
