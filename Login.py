@@ -19,9 +19,9 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("My App")
-        self.create_client()
+        self.create_ui()
         
-        #self.signup.clicked.connect(self.signup_clicked)
+        self.signup.clicked.connect(self.signup_clicked)
     
     def create_ui(self):
         self.setFixedSize(870, 500)
