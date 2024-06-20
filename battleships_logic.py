@@ -13,7 +13,7 @@ class Ship:
         - tracks its own health
         - using the name attribute it can be customized by the user
     """
-    def __init__(self, size: tuple[int, int], position: tuple[int, int], name: str) -> None:
+    def __init__(self, size: tuple[int, int], position: tuple[int, int], name: str, destroyed_parts: list=None) -> None:
         """
         parameters:
             size: tuple[int, int] -- (x_size, y_size) of ship
@@ -25,8 +25,11 @@ class Ship:
         self.name = name
         self.alive = True
 
-        self.destroyedParts = list()    # stores destroyed parts of ship relative to ship head(self.position)
-                                        # might be better to change to absolute, depending on GUI interfacing
+        if not destroyed_parts:
+            self.destroyedParts = list()    # stores destroyed parts of ship relative to ship head(self.position)
+                                            # might be better to change to absolute, depending on GUI interfacing
+        else:
+            self.destroyedParts = destroyed_parts
 
     def on_ship(self, probe_position: tuple[int, int]) -> bool:
         """
@@ -104,6 +107,8 @@ class Board:
         # (unused) ships for each player
         self.ships = [list(), list()]
         self.unused_ships = [self.ship_selection[::], self.ship_selection[::]]
+
+        self.misses = [list(), list()]   # misses ON specific board
 
     def _is_valid_position(self, player: int, ship_size: tuple[int, int], position: tuple[int, int]) -> bool:
         """
@@ -234,6 +239,8 @@ class Board:
         
         self.active_player = (player+1)%len(self.ships)   # switch player
 
+        self.misses.append(position)
+
         return False
     
     def is_defeated(self, player: int) -> bool:
@@ -253,6 +260,39 @@ class Board:
             if ship.alive:
                 return False
         return True
+    
+    def import_game(self, data: list) -> None:
+        self.ships = [list() for _ in range(len(data))]
+        self.misses = [list() for _ in range(len(data))]
+        for board_data in range(len(data)-1):
+            for ship in list(data[board_data].keys())[:-1]:
+                ship_data = data[board_data][ship]
+                destr_parts = [tuple(i) for i in ship_data["destroyedParts"]]
+                self.ships[board_data].append(Ship(size=tuple(ship_data["size"]), position=tuple(ship_data["position"]), name=ship, destroyed_parts=destr_parts))
+                self.ships[board_data][-1].alive = ship_data["alive"]
+            self.misses[board_data] = data[board_data]["misses"]
+        self.active_player = data[-1]
+
+    def export_game(self) -> list:
+        game = list()
+
+        for player in range(len(self.ships)):
+            ships = dict()
+            for ship in self.ships[player]:
+                ship_data = dict()
+                ship_data["size"] = list(ship.size)
+                ship_data["position"] = list(ship.position)
+                ship_data["alive"] = ship.alive
+                destr_parts = [list(i) for i in ship.destroyedParts]
+                ship_data["destroyedParts"] = list(destr_parts)
+                ships[ship.name] = ship_data
+            ships["misses"] = [list(i) for i in self.misses[player]]
+            game.append(ships)
+        game.append(self.active_player)
+
+        return game
+
+                                              
     
 def draw(board: Board, player: int, show: bool = True) -> None:
     """
@@ -342,11 +382,19 @@ if "__main__" == __name__:
         positiony = int(input("ship y position: "))
         position = (positionx, positiony)
 
+        if input("export?: ") == "ja":
+            game = boards.export_game()
+            print(game)
+
         # try to attack given position
         if boards.attack(boards.active_player, position):
             print("hit, again")
         else:
             print("miss")
+
+        if input("load?: ") == "ja":
+            print("importing")
+            boards.import_game(game)
 
     print("end:", boards.active_player, "won")
 
